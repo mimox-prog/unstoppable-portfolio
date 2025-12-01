@@ -39,16 +39,16 @@ export default function HomePage() {
         </header>
 
         {/* --- Agent Modules Section --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-20">
           {agentModules.map((agent, index) => (
             <motion.div
               key={agent.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 * index }}
-              className="bg-brand-gray border border-brand-light-gray rounded-xl p-6 flex items-start space-x-4"
+              className="bg-brand-gray border border-brand-light-gray rounded-xl p-6 flex items-start space-x-4 hover:border-brand-blue transition-colors duration-300"
             >
-              <agent.icon className="w-8 h-8 text-brand-blue mt-1" />
+              <agent.icon className="w-8 h-8 text-brand-blue mt-1 flex-shrink-0" />
               <div>
                 <h3 className="text-lg font-bold text-white">{agent.title}</h3>
                 <p className="text-brand-text-secondary">{agent.description}</p>
@@ -81,9 +81,50 @@ export default function HomePage() {
   );
 }
 
-// --- The Sandbox Modal Component ---
+// --- The Sandbox Modal Component (UPGRADED) ---
 function SandboxModal({ closeModal }) {
-  // This will be replaced with the live agent logic in our next step.
+  const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
+  
+  const handleDeploy = async () => {
+    if (!inputValue.trim() || isLoading) return;
+
+    const userMessage = { role: 'user', content: inputValue };
+    const newChatHistory = [...chatHistory, userMessage];
+    setChatHistory(newChatHistory);
+    setInputValue('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          input: inputValue, 
+          // Pass previous messages, excluding the last user message which is the current input
+          chat_history: chatHistory 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const agentMessage = { role: 'agent', content: result.output };
+      
+      setChatHistory([...newChatHistory, agentMessage]);
+
+    } catch (error) {
+      console.error("Failed to deploy agent:", error);
+      const errorMessage = { role: 'agent', content: "Error: Could not connect to the agent. Please check the console and ensure API keys are set." };
+      setChatHistory([...newChatHistory, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -108,9 +149,27 @@ function SandboxModal({ closeModal }) {
         </header>
         
         <div className="p-6 flex-grow h-[60vh] overflow-y-auto">
-          <div className="text-center text-brand-text-secondary p-8">
-            <p>The agent is ready.</p>
-            <p className="text-sm mt-2">State your business objective below.</p>
+          {chatHistory.length === 0 && !isLoading && (
+            <div className="text-center text-brand-text-secondary p-8 animate-fade-in">
+              <p>The agent is ready.</p>
+              <p className="text-sm mt-2">State your business objective below.</p>
+            </div>
+          )}
+          <div className="space-y-4">
+            {chatHistory.map((msg, index) => (
+              <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-lg px-4 py-2 rounded-lg ${msg.role === 'user' ? 'bg-brand-blue text-white' : 'bg-brand-light-gray text-brand-text'}`}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                  <div className="max-w-lg px-4 py-2 rounded-lg bg-brand-light-gray text-brand-text">
+                    Thinking...
+                  </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -118,11 +177,19 @@ function SandboxModal({ closeModal }) {
           <div className="flex items-center">
             <input
               type="text"
-              placeholder="e.g., 'Book a meeting with Marouan for next Tuesday...'"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleDeploy()}
+              placeholder="e.g., 'What are the top 3 AI startups in Europe right now?'"
               className="w-full bg-transparent text-white placeholder-brand-text-secondary focus:outline-none"
+              disabled={isLoading}
             />
-            <button className="bg-brand-blue text-white font-semibold px-5 py-2 rounded-lg ml-4">
-              Deploy
+            <button 
+              onClick={handleDeploy}
+              disabled={isLoading || !inputValue.trim()}
+              className="bg-brand-blue text-white font-semibold px-5 py-2 rounded-lg ml-4 transition-colors duration-200 disabled:bg-brand-light-gray disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Executing...' : 'Deploy'}
             </button>
           </div>
         </footer>
