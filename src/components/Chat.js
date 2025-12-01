@@ -1,9 +1,15 @@
-// src/components/Chat.js
+// src/components/Chat.js (Dynamic Version)
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
 
-export default function Chat() {
+// --- Main Chat Component ---
+// It now accepts props to change its behavior
+export default function Chat({ 
+  agentType = "KAI_ASSISTANT", 
+  title = "Live AI Assistant", 
+  placeholder = "Ask me about Marouan's skills or projects..." 
+}) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -13,13 +19,11 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  useEffect(scrollToBottom, [messages]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -27,10 +31,11 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
+      // Send the agentType along with the message
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: input, agent_type: agentType }),
       });
 
       if (!response.ok) {
@@ -43,7 +48,7 @@ export default function Chat() {
 
     } catch (error) {
       console.error("Failed to get AI response:", error);
-      const errorMessage = { role: 'assistant', content: "Sorry, I'm having trouble connecting. Please try again later." };
+      const errorMessage = { role: 'assistant', content: "Sorry, I'm having trouble connecting. Please try again." };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -55,15 +60,14 @@ export default function Chat() {
       <div className="container mx-auto px-6 max-w-3xl">
         <div className="bg-white/5 border border-white/10 rounded-lg shadow-2xl">
           <div className="p-6 border-b border-white/10">
-            <h2 className="text-2xl font-bold text-white text-center">Live AI Assistant</h2>
-            <p className="text-gray-400 text-center mt-1">Ask me about Marouan's skills, projects, or availability.</p>
+            <h2 className="text-2xl font-bold text-white text-center">{title}</h2>
           </div>
           <div className="p-6 h-96 overflow-y-auto">
             <div className="space-y-4">
               {messages.map((msg, index) => (
                 <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200'}`}>
-                    <p>{msg.content}</p>
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
                 </div>
               ))}
@@ -83,7 +87,7 @@ export default function Chat() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask the agent a question..."
+                placeholder={placeholder}
                 className="flex-grow bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
