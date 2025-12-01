@@ -1,8 +1,8 @@
-// src/app/page.js (Final Version)
-"use client"; // This is important for the chat component to work
+// src/app/page.js (Final Version with Project Link)
+"use client";
 
 import Link from 'next/link';
-import Chat from '@/components/Chat'; // Import the new Chat component
+import Chat from '@/components/Chat';
 
 // --- HERO SECTION ---
 function Hero() {
@@ -31,10 +31,30 @@ function Hero() {
 // --- PROJECTS SECTION ---
 function Projects() {
   const projects = [
-    { title: "AI Sales Agent for Clinics", description: "An autonomous agent that qualifies leads, answers questions, and books appointments via web chat.", tags: ["Sales Automation", "LangChain", "Next.js"] },
-    { title: "Voice Concierge Agent", description: "A voice-activated AI that manages bookings and customer queries over the phone.", tags: ["Voice AI", "Twilio", "Python"] },
-    { title: "E-commerce Support Agent", description: "A multi-agent system that handles returns, order tracking, and product questions for Shopify stores.", tags: ["E-commerce", "Multi-Agent", "Shopify API"] },
-    { title: "Unified Agentic Workspace", description: "An internal platform that orchestrates multiple agents for research, analysis, and reporting tasks.", tags: ["Workflow Automation", "CrewAI", "Internal Tools"] },
+    { 
+      title: "AI Sales Agent for Clinics", 
+      description: "An autonomous agent that qualifies leads, answers questions, and books appointments via web chat.", 
+      tags: ["Sales Automation", "LangChain", "Next.js"],
+      link: "/projects/ai-sales-agent" // The new link
+    },
+    { 
+      title: "Voice Concierge Agent", 
+      description: "A voice-activated AI that manages bookings and customer queries over the phone.", 
+      tags: ["Voice AI", "Twilio", "Python"],
+      link: "#" // Placeholder link
+    },
+    { 
+      title: "E-commerce Support Agent", 
+      description: "A multi-agent system that handles returns, order tracking, and product questions for Shopify stores.", 
+      tags: ["E-commerce", "Multi-Agent", "Shopify API"],
+      link: "#" // Placeholder link
+    },
+    { 
+      title: "Unified Agentic Workspace", 
+      description: "An internal platform that orchestrates multiple agents for research, analysis, and reporting tasks.", 
+      tags: ["Workflow Automation", "CrewAI", "Internal Tools"],
+      link: "#" // Placeholder link
+    },
   ];
   return (
     <section id="projects" className="py-20 sm:py-24">
@@ -42,13 +62,15 @@ function Projects() {
         <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12">Featured Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {projects.map((project, index) => (
-            <div key={index} className="bg-white/5 border border-white/10 rounded-lg p-6 transition-all duration-300 hover:border-blue-500/50 hover:bg-white/10">
-              <h3 className="text-2xl font-bold text-white mb-3">{project.title}</h3>
-              <p className="text-gray-400 mb-4">{project.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {project.tags.map(tag => <span key={tag} className="bg-gray-700 text-blue-300 text-xs font-semibold px-2.5 py-1 rounded-full">{tag}</span>)}
+            <Link key={index} href={project.link || "#"} className="block">
+              <div className="bg-white/5 border border-white/10 rounded-lg p-6 h-full transition-all duration-300 hover:border-blue-500/50 hover:bg-white/10">
+                <h3 className="text-2xl font-bold text-white mb-3">{project.title}</h3>
+                <p className="text-gray-400 mb-4">{project.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {project.tags.map(tag => <span key={tag} className="bg-gray-700 text-blue-300 text-xs font-semibold px-2.5 py-1 rounded-full">{tag}</span>)}
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -62,7 +84,7 @@ export default function Home() {
     <>
       <Hero />
       <Projects />
-      <Chat /> {/* Use the imported Chat component */}
+      <Chat />
     </>
   );
 }
