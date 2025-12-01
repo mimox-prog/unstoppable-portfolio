@@ -1,5 +1,8 @@
-// src/app/page.js
+// src/app/page.js (Final Version)
+"use client"; // This is important for the chat component to work
+
 import Link from 'next/link';
+import Chat from '@/components/Chat'; // Import the new Chat component
 
 // --- HERO SECTION ---
 function Hero() {
@@ -59,7 +62,7 @@ export default function Home() {
     <>
       <Hero />
       <Projects />
-      {/* We will add the Chat component here in the next step */}
+      <Chat /> {/* Use the imported Chat component */}
     </>
   );
 }
